@@ -405,7 +405,11 @@ class ABL(object):
         tref = Lref/Uref
 
         nsfile = os.path.join(path,'NS.setup')
+        enfile = os.path.join(path,'therm.setup')
+        ekfile = os.path.join(path,'ekman.setup')
         ns_stp = readsp.ns_setup(nsfile,Lref=Lref,Uref=Uref)
+        en_stp = readsp.en_setup(enfile,Lref=Lref,Uref=Uref)
+        ek_stp = readsp.ek_setup(ekfile,Lref=Lref,Uref=Uref)
         self.__kappa = 0.4              #von Karman constant
         self.__z0 = ns_stp['z0']        #Surface roughness
         self.__dpdx = None              #Pressure gradient
@@ -418,15 +422,11 @@ class ABL(object):
         self.__fc = None                #Coriolis parameter
         self.__gravity = None           #Gravitational acceleration
         self.__G = None                 #Geostrophic wind speed
-        if ns_stp['ekman']:
-            ekfile = os.path.join(path,'ekman.setup')
-            ek_stp = readsp.ek_setup(ekfile,Lref=Lref,Uref=Uref)
+        if ek_stp['ekman']:
             self.__fc = ek_stp['fc']
             self.__G  = ns_stp['force_param']
             self.__mode = 'EKM'
-        if ns_stp['thermo']:
-            enfile = os.path.join(path,'therm.setup')
-            en_stp = readsp.en_setup(enfile,Lref=Lref,Uref=Uref)
+        if en_stp['thermo']:
             self.__gravity = en_stp['gravity']
             self.__mode = 'ABL'
 

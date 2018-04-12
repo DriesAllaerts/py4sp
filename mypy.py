@@ -11,6 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import itertools
 from scipy.ndimage.filters import uniform_filter1d
+from matplotlib.colors import Normalize
 
 def normalised_correlate(a,v,mode):
     a = (a - np.mean(a))/(np.std(a) * len(a))
@@ -59,7 +60,10 @@ def smoothstep(x):
     return S
 
 def smooth(x, N,mode='nearest'):
-    return uniform_filter1d(x, size=N,mode=mode)
+    if N>0:
+        return uniform_filter1d(x, size=N,mode=mode)
+    else:
+        return x
 
 def trapzst(u,zst,i1,i2):
     '''Integrate a given profile from i1 to i2,
@@ -119,7 +123,6 @@ def disk_areas(zst,zc,r):
         #else: point lies outside the circle so do not
     return areas
 
-
 class progressBar(object):
     def __init__(self,text,N):
         print('    '+text)
@@ -143,3 +146,14 @@ class progressBar(object):
         #Reached the end
         if n==self.N:
             print('\n')
+
+class MidpointNormalize(Normalize):
+    def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
+        self.midpoint = midpoint
+        Normalize.__init__(self, vmin, vmax, clip)
+
+    def __call__(self, value, clip=None):
+        # I'm ignoring masked values and all kinds of edge cases to make a
+        # simple example...
+        x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
+        return np.ma.masked_array(np.interp(value, x, y))

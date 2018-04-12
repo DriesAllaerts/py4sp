@@ -31,3 +31,9 @@ def BLfield(BL,filename='BL_field.dat',Nl=3):
             BL['th'].value.reshape((BL['th'].size,1), order='F').tofile(binfile)
         if Nl>4:
             BL['tke'].value.reshape((BL['tke'].size,1), order='F').tofile(binfile)
+
+def image(filename,data):
+    with open(filename,'wb') as binfile:
+        np.array([data.shape[0]]).astype(dtype=np.int32).tofile(binfile)
+        np.array([data.shape[1]]).astype(dtype=np.int32).tofile(binfile)
+        data.ravel().tofile(binfile)

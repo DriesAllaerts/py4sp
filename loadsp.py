@@ -342,6 +342,13 @@ def tfile(filename,tref=1.0):
     '''Load time_array file (ascii)'''
     return tref*np.loadtxt(filename,skiprows=1)
 
+def tfile_bin(filename,tref=1.0):
+    '''Load time_array file (binary)'''
+    with open(filename,'rb') as binfile:
+        Nt = np.asscalar(np.fromfile(binfile, dtype=np.int32, count=1))
+        ts = np.fromfile(binfile, dtype=np.float64, count=Nt)*tref
+    return ts
+
 def CIfile_matlab(filename):
     '''Load file with Capping Inversion data
     (old data format generated with matlab)'''
@@ -372,3 +379,9 @@ def point_measurement(filename,Uref=1.0,Lref=1.0):
     data['w'] = dummy[:,3]*Uref
     return data
 
+def image(filename):
+    with open(filename,'rb') as binfile:
+        m = np.asscalar(np.fromfile(binfile, dtype=np.int32, count=1))
+        n = np.asscalar(np.fromfile(binfile, dtype=np.int32, count=1))
+        data = np.fromfile(binfile,dtype=np.float64,count=m*n).reshape((m,n))
+    return data
