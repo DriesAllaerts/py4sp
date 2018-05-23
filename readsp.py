@@ -249,18 +249,38 @@ def windfarm_setup(filename='windfarm.setup',Lref=1.0,Uref=1.0):
         windfarm[:,5] *= 1.0/tref
     return Nt, Ct, windfarm
 
-def PBSout(filename):
+def PBSout(filename,verbose=True):
     walltime = []
     timestep = []
+    total_walltime = None
     with open(filename,'r') as file:
         for line in file:
-            if 'PBS: job killed' in line:
-                break
+#            if 'PBS: job killed' in line:
+#                break
             if 'RK_time,' in line.rstrip('\r\n').split():
                 walltime.append(float(line.rstrip('\r\n').split()[-1]))
                 timestep.append(float(line.rstrip('\r\n').split()[-2]))
+#            if 'Resource List' in line.rstrip('\r\n').split(':'):
+#                node_string = line.rstrip('\r\n').split(',')[1]
+#                nodes = int(node_string.replace(':','=').split('=')[1])
+#                cores = int(node_string.replace(':','=').split('=')[-1])
+            if 'nodes' in  line.rstrip('\r\n').split(': '):
+                nodes = int(line.rstrip('\r\n').split(': ')[-1])
+            if 'procs' in  line.rstrip('\r\n').split(': '):
+                cores = int(int(line.rstrip('\r\n').split(': ')[-1])/nodes)
+            if 'Resources Used' in line.rstrip('\r\n').split(':'):
+                walltime_string = line.rstrip('\r\n').split(',')[-1]
+                hours = float(walltime_string.replace(':','=').split('=')[1])
+                minutes = float(walltime_string.replace(':','=').split('=')[2])
+                seconds = float(walltime_string.replace(':','=').split('=')[3])
+                total_walltime = hours+minutes/60.+seconds/3600.
+    if not total_walltime:
+        total_walltime=np.sum(walltime)/3600.
     N = len(walltime)
-    print('Average time step for',N,'samples is',np.mean(np.array(timestep)))
-    print('Average walltime per time step for',N,'samples is',np.mean(np.array(walltime)))
-    return np.array(walltime)
+    if verbose:
+        print('Average time step for',N,'samples is',np.mean(np.array(timestep)))
+        print('Average walltime per time step for',N,'samples is',np.mean(np.array(walltime)))
+        print('Number of cores:',nodes,'x',cores)
+        print('Total wall time:',total_walltime,'h')
+    return nodes,cores,total_walltime,N,np.array(walltime)
 
