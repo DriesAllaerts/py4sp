@@ -18,6 +18,14 @@ def normalised_correlate(a,v,mode):
     v = (v - np.mean(v))/np.std(v)
     return np.correlate(a,v,mode)
 
+def autocorrelation(x):
+    mean = x.mean()
+    var = np.var(x)
+    xp = x-mean
+    corr = np.correlate(xp,xp,'full')[len(x)-1:]/var/len(x)
+    lags = np.arange(len(corr))
+    return corr,lags
+
 def heaviside(x):
     '''
     Heaviside function:
