@@ -202,6 +202,38 @@ def BLfieldstat(filename='BL_fieldstat.dat',Nl=11,Uref=1.0,**kwargs):
     #    stat[names[i]] = fieldsp.rfield(dummy[:,:,:,i],grid)
     return stat
 
+def BLsurfacestat(filename='BL_surface_stat.dat',Uref=1.0,Tref=1.0,**kwargs):
+    '''Load BL_surface_stat file'''
+
+    if not os.path.exists(filename):
+        print('Error: '+filename+' does not exist')
+        return 1
+
+    if 'grid' in kwargs:
+        grid = kwargs['grid']
+        Nx2 = grid.Nx2
+        Ny  = grid.Ny
+    elif all([i in kwargs for i in ['Nx2','Ny']]):
+        grid = None
+        Nx2 = kwargs['Nx2']
+        Ny  = kwargs['Ny']
+    else:
+        print('Error: Cannot determine the dimensions of BLsurfacestat')
+        return 1
+
+    stat = {}
+    Nl = 3
+    with open(filename,'rb') as binfile:
+        stat['nsamp'] = np.fromfile(binfile, dtype=np.int32, count=1)
+        dummy = np.fromfile(binfile, dtype=np.float64, count=Nx2*Ny*Nl)
+    shape = (Nx2,Ny,Nl)
+    dummy = dummy.reshape(shape, order='F')
+    stat['tw1']  = fieldsp.rfield(dummy[:,:,0]*Uref**2,grid)
+    stat['tw2']  = fieldsp.rfield(dummy[:,:,1]*Uref**2,grid)
+    stat['qw']   = fieldsp.rfield(dummy[:,:,2]*Uref*Tref,grid)
+
+    return stat
+
 def BLfieldstat_distributed(filename='BL_fieldstat_01.dat',scale=1.0,**kwargs):
     '''Load a particular field from a distributed BLfieldstat file (binary)'''
 
